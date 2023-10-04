@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id               Int                @id @default(autoincrement())
+  firstName        String
+  lastName         String
+  email            String             @unique
+  mobile           String
+  password         String
+  otp              String
+  categories       categories[]
+  products         products[]
+  customers        customers[]
+  invoices         invoices[]
+  invoice_products invoice_products[]
+}
+
+model categories {
+  id       Int        @id @default(autoincrement())
+  name     String
+  user_id  Int        @unique
+  user     user       @relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  products products[]
+}
+
+model products {
+  id               Int                @id @default(autoincrement())
+  name             String
+  price            String
+  unit             String
+  img_url          String
+  user_id          Int                @unique
+  user             user               @relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  category_id      Int                @unique
+  categories       categories         @relation(fields: [category_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  invoice_products invoice_products[]
+}
+
+model customers {
+  id       Int        @id @default(autoincrement())
+  name     String
+  email    String
+  mobile   String
+  user_id  Int        @unique
+  user     user       @relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  invoices invoices[]
+}
+
+model invoices {
+  id               Int                @id @default(autoincrement())
+  total            String
+  discount         String
+  vat              String
+  payable          String
+  user_id          Int                @unique
+  customers_id     Int                @unique
+  user             user               @relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  customers        customers          @relation(fields: [customers_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  invoice_products invoice_products[]
+}
+
+model invoice_products {
+  id                  Int    @id @default(autoincrement())
+  qty                 String
+  sale_price          String
+  user_id             Int    @unique
+  invoice_products_id Int    @unique
+  invoices_id         Int    @unique
+
+  user user @relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  products products @relation(fields: [invoice_products_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  invoices invoices @relation(fields: [invoices_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+}
